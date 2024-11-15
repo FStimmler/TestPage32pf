@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Información del Dispositivo</title>
+</head>
+<body>
+
+
+    
+
+<h1>Reproductor de Video Local</h1>
+<video width="400" height="360" controls>
+    <source src="Faruk1.mp4" type="video/mp4">
+    Tu navegador no soporta la etiqueta de video.
+</video>
+<h1>Información del Dispositivo</h1>
+<div id="infoDispositivo"></div>
+<script>
+    async function obtenerInfoDispositivo() {
+        const info = {
+            navegador: navigator.userAgent,
+            plataforma: navigator.platform,
+            online: navigator.onLine ? "Sí" : "No",
+            idioma: navigator.language,
+            resolucionPantalla: `${window.screen.width} x ${window.screen.height}`,
+            tamañoVentana: `${window.innerWidth} x ${window.innerHeight}`,
+            cookiesHabilitadas: navigator.cookieEnabled ? "Sí" : "No",
+            memoriaDispositivo: navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "Desconocido",
+            nucleosProcesador: navigator.hardwareConcurrency || "Desconocido",
+            ipPublica: "Cargando..."
+        };
+
+        // Mostrar la información sin la IP primero
+        const infoDiv = document.getElementById("infoDispositivo");
+        for (const [clave, valor] of Object.entries(info)) {
+            const p = document.createElement("p");
+            p.textContent = `${clave}: ${valor}`;
+            infoDiv.appendChild(p);
+        }
+
+        // Obtener la IP pública usando la API de ipify
+        try {
+            const response = await fetch('https://api.ipify.org?format=json');
+            const data = await response.json();
+            const ipElement = document.createElement("p");
+            ipElement.textContent = `IP Pública: ${data.ip}`;
+            infoDiv.appendChild(ipElement);
+        } catch (error) {
+            console.error("Error al obtener la IP:", error);
+            const errorElement = document.createElement("p");
+            errorElement.textContent = "IP Pública: No se pudo obtener";
+            infoDiv.appendChild(errorElement);
+        }
+    }
+
+    obtenerInfoDispositivo();
+
+    
+</script>
+</body>
+</html>
