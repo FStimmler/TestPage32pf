@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego de Imágenes</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 20rem);
+      gap: 0.625rem;
+    }
+    .grid img {
+      width: 20rem;
+      height: 10rem;
+      object-fit: cover;
+      border: 0.125rem solid transparent;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .grid img:hover {
+      transform: scale(1.05);
+      border-color: #007bff;
+    }
+    .hidden {
+      display: none;
+    }
+    .message {
+      margin-top: 1.25rem;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="grid" id="imageGrid"></div>
+    <div class="message" id="message"></div>
+  </div>
+
+  <script>
+    // Carga de conjuntos de imágenes desde un objeto
+    level = 0
+    const imageSets = {
+      set1: [
+      'img/s07/s07e02.jpg',
+      'img/s07/s07e03.jpg',
+      'img/s07/s07e04-1.jpg',
+      'img/s07/s07e05.jpg',
+      'img/s07/s07e07.jpg',
+      'img/s07/s07e08.jpg',
+      'img/s07/s07e04-2.jpg',
+      'img/s07/s07e09.jpg',
+      'img/s07/s07e11.jpg',
+      ],
+      set2: [
+      'img/s09/s09e02-1.jpg',
+      'img/s09/s09e03-1.jpg',
+      'img/s09/s09e06-1.jpg',
+      'img/s09/s09e05-1.jpg',
+      'img/s09/s09e09-1.jpg',
+      'img/s09/s09e08-1.jpg',
+      'img/s09/s09e12-1.jpg',
+      'img/s09/s09e14-1.jpg',
+      'img/s09/s09e03-2.jpg',
+      ]
+    };
+
+    // Seleccionar un conjunto de imágenes aleatorio
+    function selectRandomImageSet() {
+      const keys = Object.keys(imageSets);
+      const randomKey = keys[Math.floor(Math.random() * keys.length)];
+      return imageSets[randomKey];
+    }
+
+    // Mezclar imágenes
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function createGrid() {
+      const keys = Object.keys(imageSets);
+      console.log(keys)
+      const images = imageSets[keys[level]];
+      const shuffledImages = shuffle(images);
+      const grid = document.getElementById('imageGrid');
+      grid.innerHTML = '';
+
+      shuffledImages.forEach((src, index) => {
+        const img = document.createElement('img');
+        img.src = src;
+        console.log(img.src)
+        const match = img.src.match(/img\/(.{10})/);
+        img.episode = match[1]
+        console.log(img.episode)
+        img.dataset.index = index;
+        grid.appendChild(img);
+      });
+    }
+
+    // Crear la cuadrícula inicial
+    createGrid();
+
+    // Lógica del juego
+    let selectedImages = [];
+    const message = document.getElementById('message');
+
+    document.getElementById('imageGrid').addEventListener('click', (event) => {
+      if (event.target.tagName === 'IMG') {
+        const img = event.target;
+
+        // Verificar si la imagen ya está seleccionada
+        const alreadySelected = selectedImages.find(selected => selected.dataset.index === img.dataset.index);
+
+        if (alreadySelected) {
+          img.style.borderColor = 'transparent';
+          selectedImages = selectedImages.filter(selected => selected.dataset.index !== img.dataset.index);
+        } else {
+          img.style.borderColor = '#007bff';
+          selectedImages.push(img);
+        }
+
+        if (selectedImages.length === 2) {
+          const [first, second] = selectedImages;
+          if (first.episode === second.episode && first.dataset.index !== second.dataset.index) {
+            message.textContent = '¡Ganaste! Las imágenes coinciden. Reiniciando...';
+            message.style.color = 'green';
+            setTimeout(() => {
+              message.textContent = '';
+              level += 1;
+              createGrid();
+            }, 2000);
+          } else {
+            message.textContent = 'Perdiste. Intenta de nuevo.';
+            message.style.color = 'red';
+            setTimeout(() => {
+              first.style.borderColor = 'transparent';
+              second.style.borderColor = 'transparent';
+              message.textContent = '';
+            }, 1000);
+          }
+          selectedImages = [];
+        }
+      }
+    });
+  </script>
+</body>
+</html>
